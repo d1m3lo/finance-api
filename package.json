@@ -1,0 +1,12 @@
+{
+  "name": "financeapi",
+  "version": "1.0.0",
+  "description": "REST API for personal finance management built with Node.js, Express, PostgreSQL, Prisma ORM and Docker.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
