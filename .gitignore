@@ -2,6 +2,7 @@
 node_modules/
 
 # Environment variables
+*.env
 
 # Logs 
 *.log 
@@ -25,3 +26,11 @@ coverage/
 
 # Windows
 Thumbs.db
+/src/generated/prisma
+
+# Prisma skills
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
