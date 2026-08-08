@@ -1,6 +1,8 @@
 const express = require("express")
 const prisma = require("../lib/prisma")
 const router = express.Router()
+const bcrypt = require("bcrypt")
+const saltRounds = 10
 
 router.post("/register", async (req, res) => {
     try {
@@ -14,16 +16,17 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({ error: "Missing required fields", fields: missingFields })
         }
         const existingEmail = await prisma.user.findUnique({
-            where: {email}
+            where: { email }
         })
         if (existingEmail) {
             return res.status(409).json({ error: "Email already registered" })
         }
+        const hashPassword = await bcrypt.hash(password, saltRounds)
         await prisma.user.create({
             data: {
                 name,
                 email,
-                password
+                password: hashPassword
             }
         })
         res.status(201).json({ name, email })
