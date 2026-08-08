@@ -1,17 +1,11 @@
 const express = require("express");
-const prisma = require("./lib/prisma");
+const userRoutes = require("./router/userRoutes")
 
 const app = express();
 
-app.get("/users", async (req, res) => {
-    try {
-        const users = await prisma.user.findMany();
-        res.json(users);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal server error" });
-    }
-});
+app.use(express.json())
+app.use("/", userRoutes)
+
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");
