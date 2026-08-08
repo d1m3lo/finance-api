@@ -1,8 +1,13 @@
 const express = require("express")
 const prisma = require("../lib/prisma")
+
 const router = express.Router()
+
 const bcrypt = require("bcrypt")
 const saltRounds = 10
+
+const jwt = require("jsonwebtoken")
+
 
 router.post("/register", async (req, res) => {
     try {
@@ -15,10 +20,10 @@ router.post("/register", async (req, res) => {
         if (missingFields.length > 0) {
             return res.status(400).json({ error: "Missing required fields", fields: missingFields })
         }
-        const existingEmail = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { email }
         })
-        if (existingEmail) {
+        if (user) {
             return res.status(409).json({ error: "Email already registered" })
         }
         const hashPassword = await bcrypt.hash(password, saltRounds)
@@ -32,8 +37,30 @@ router.post("/register", async (req, res) => {
         res.status(201).json({ name, email })
     } catch (err) {
         console.log(err)
-        res.status(500).json({ message: "Internal Server Error" })
+        return res.status(500).json({ error: "Internal Server Error" })
     }
+})
+
+router.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body
+        const user = await prisma.user.findUnique({
+            where: { email }
+        })
+        if (!user) return res.status(400).json({ error: "email or password is incorrect" })
+        const isValid = await bcrypt.compare(password, user.password)
+        if (!isValid) return res.status(400).json({ error: "email or password is incorrect" })
+        const secret = process.env.JWT_SECRET
+        const payload = { userId: user.id, name: user.name, email: user.email }
+        const token = jwt.sign(payload, secret, { expiresIn: '1h' })
+        res.status(200).json({ message: "successful login", accessToken: token })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ error: "Internal Server Error" })
+
+    }
+
+
 })
 
 module.exports = router
