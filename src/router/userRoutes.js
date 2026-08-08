@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
         const payload = { userId: user.id, name: user.name, email: user.email }
         const token = jwt.sign(payload, secret, { expiresIn: '1h' })
         res.status(200).json({ message: "successful login", accessToken: token })
-    } catch (err) {
+    } catch (err) { 
         console.log(err)
         return res.status(500).json({ error: "Internal Server Error" })
 
