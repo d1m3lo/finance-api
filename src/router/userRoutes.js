@@ -8,6 +8,9 @@ const saltRounds = 10
 
 
 const jwt = require("jsonwebtoken")
+const authMiddleware = require("../middleware/authMiddleware")
+
+
 
 
 
@@ -22,10 +25,10 @@ router.post("/register", async (req, res) => {
         if (missingFields.length > 0) {
             return res.status(400).json({ error: "Missing required fields", fields: missingFields })
         }
-        const user = await prisma.user.findUnique({
+        const existingEmail = await prisma.user.findUnique({
             where: { email }
         })
-        if (user) {
+        if (existingEmail) {
             return res.status(409).json({ error: "Email already registered" })
         }
         const hashPassword = await bcrypt.hash(password, saltRounds)
@@ -61,6 +64,41 @@ router.post("/login", async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" })
 
     }
+
+    router.patch("/", authMiddleware, async (req, res) => {
+        try {
+            const { name, email, password } = req.body
+            const data = {}
+            if (name !== undefined) {
+                if (typeof name !== "string" || name.trim() === "") {
+                    return res.status(400).json({ error: "The field cannot be empty" })
+                }
+                data.name = name
+            }
+            if (email !== undefined) {
+                if (typeof email !== "string" || email.trim() === "") {
+                    return res.status(400).json({ error: "The field cannot be empty" })
+                }
+                const existingEmail = await prisma.user.findUnique({ where: { email } })
+                if (existingEmail.id !== req.user.id) return res.status(409).json({ error: "Email already registered" })
+                data.email = email
+            }
+
+            if (password !== undefined) {
+                if (typeof password !== "string" || password.trim() === "") {
+                    return res.status(400).json({ error: "The field cannot be empty" })
+                }
+                const hashPassword = await bcrypt.hash(password, saltRounds)
+                data.password = hashPassword
+            }
+            if (Object.keys(data).length === 0) return res.status(400).json({ error: "Missing fields" })
+            await prisma.user.update({ where: { id: req.user.id }, data })
+            res.status(200).json({ message: "your data has been updated successfully" })
+        } catch (err) {
+            console.log(err)
+            return res.status(500).json({ error: "Internal Server Error" })
+        }
+    })
 
 
 })
