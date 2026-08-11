@@ -9,7 +9,7 @@ const saltRounds = 10
 
 const jwt = require("jsonwebtoken")
 const authMiddleware = require("../middleware/authMiddleware")
-const { schemaRegister, schemaUpdate } = require("../schemas/userSchema")
+const { schemaUserUpdate, schemaUserRegister } = require("../schemas/userSchema")
 
 
 
@@ -18,7 +18,7 @@ const { schemaRegister, schemaUpdate } = require("../schemas/userSchema")
 router.post("/register", async (req, res) => {
     try {
         const { name, email, password } = req.body
-        const result = schemaRegister.safeParse({ name, email, password })
+        const result = schemaUserRegister.safeParse({ name, email, password })
         if (!result.success) {
             return res.status(400).json({ error: "Validation failed" })
         }
@@ -67,7 +67,7 @@ router.patch("/", authMiddleware, async (req, res) => {
     try {
         const { name, email, password } = req.body
         const data = {}
-        const result = schemaUpdate.safeParse({ name, email, password })
+        const result = schemaUserUpdate.safeParse({ name, email, password })
         if (!result.success) {
             return res.status(400).json({ error: "Validation failed" })
         }
