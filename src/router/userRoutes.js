@@ -9,6 +9,7 @@ const saltRounds = 10
 
 const jwt = require("jsonwebtoken")
 const authMiddleware = require("../middleware/authMiddleware")
+const { schemaRegister, schemaUpdate } = require("../schemas/userSchema")
 
 
 
@@ -17,29 +18,25 @@ const authMiddleware = require("../middleware/authMiddleware")
 router.post("/register", async (req, res) => {
     try {
         const { name, email, password } = req.body
-        const isEmpty = (value) => !value || (typeof value === "string" && value.trim() === "")
-        const missingFields = []
-        if (isEmpty(name)) missingFields.push(name)
-        if (isEmpty(email)) missingFields.push(email)
-        if (isEmpty(password)) missingFields.push(password)
-        if (missingFields.length > 0) {
-            return res.status(400).json({ error: "Missing required fields", fields: missingFields })
+        const result = schemaRegister.safeParse({ name, email, password })
+        if (!result.success) {
+            return res.status(400).json({ error: "Validation failed" })
         }
         const existingEmail = await prisma.user.findUnique({
-            where: { email }
+            where: { email: result.data.email }
         })
         if (existingEmail) {
             return res.status(409).json({ error: "Email already registered" })
         }
-        const hashPassword = await bcrypt.hash(password, saltRounds)
+        const hashPassword = await bcrypt.hash(result.data.password, saltRounds)
         await prisma.user.create({
             data: {
-                name,
-                email,
+                name: result.data.name,
+                email: result.data.email,
                 password: hashPassword
             }
         })
-        res.status(201).json({ name, email })
+        res.status(201).json({ name: result.data.name, email: result.data.email })
     } catch (err) {
         console.log(err)
         return res.status(500).json({ error: "Internal Server Error" })
@@ -70,26 +67,20 @@ router.patch("/", authMiddleware, async (req, res) => {
     try {
         const { name, email, password } = req.body
         const data = {}
+        const result = schemaUpdate.safeParse({ name, email, password })
+        if (!result.success) {
+            return res.status(400).json({ error: "Validation failed" })
+        }
         if (name !== undefined) {
-            if (typeof name !== "string" || name.trim() === "") {
-                return res.status(400).json({ error: "The field cannot be empty" })
-            }
-            data.name = name
+            data.name = result.data.name
         }
         if (email !== undefined) {
-            if (typeof email !== "string" || email.trim() === "") {
-                return res.status(400).json({ error: "The field cannot be empty" })
-            }
-            const existingEmail = await prisma.user.findUnique({ where: { email } })
+            const existingEmail = await prisma.user.findUnique({ where: { email: result.data.email } })
             if (existingEmail && existingEmail.id !== req.user.id) return res.status(409).json({ error: "Email already registered" })
-            data.email = email
+            data.email = result.data.email
         }
-
         if (password !== undefined) {
-            if (typeof password !== "string" || password.trim() === "") {
-                return res.status(400).json({ error: "The field cannot be empty" })
-            }
-            const hashPassword = await bcrypt.hash(password, saltRounds)
+            const hashPassword = await bcrypt.hash(result.data.password, saltRounds)
             data.password = hashPassword
         }
         if (Object.keys(data).length === 0) return res.status(400).json({ error: "Missing fields" })
