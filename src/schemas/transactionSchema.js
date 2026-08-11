@@ -6,5 +6,11 @@ const schemaTransactionRegister = z.object({
     amount: z.number().positive()
 })
 
+const schemaTransactionUpdate = z.object({
+    description: z.string().trim().min(1).optional(),
+    type: z.enum(["INCOME", "EXPENSE"]).optional(),
+    amount: z.number().positive().optional()
+})
 
-module.exports = { schemaTransactionRegister }
+
+module.exports = { schemaTransactionRegister, schemaTransactionUpdate }
