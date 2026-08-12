@@ -39,4 +39,19 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 })
 
+router.get("/:id", authMiddleware, async (req, res) => {
+    try {
+        const transactionId = req.params.id
+        const transaction = await prisma.transaction.findUnique({
+            where: { id: transactionId }
+        })
+        if (!transaction) return res.status(404).json({ error: "Transaction not found" })
+        if (transaction.userId !== req.user.id) return res.status(404).json({ error: "Transaction not found" })
+        return res.status(200).json(transaction)
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ error: "Internal Server Error" })
+    }
+})
+
 module.exports = router
