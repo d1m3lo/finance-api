@@ -9,7 +9,7 @@ const saltRounds = 10
 
 const jwt = require("jsonwebtoken")
 const authMiddleware = require("../middleware/authMiddleware")
-const { schemaUserUpdate, schemaUserRegister } = require("../schemas/userSchema")
+const { schemaUserUpdate, schemaUserRegister, schemaUserLogin } = require("../schemas/userSchema")
 
 
 
@@ -46,11 +46,15 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body
+        const result = schemaUserLogin.safeParse({ email, password })
+        if (!result.success) {
+            return res.status(400).json({ error: "Validation failed" })
+        }
         const user = await prisma.user.findUnique({
-            where: { email }
+            where: { email: result.data.email }
         })
         if (!user) return res.status(400).json({ error: "email or password is incorrect" })
-        const isValid = await bcrypt.compare(password, user.password)
+        const isValid = await bcrypt.compare(result.data.password, user.password)
         if (!isValid) return res.status(400).json({ error: "email or password is incorrect" })
         const secret = process.env.JWT_SECRET
         const payload = { userId: user.id, name: user.name, email: user.email }
