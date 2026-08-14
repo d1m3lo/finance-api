@@ -17,4 +17,4 @@ const schemaUserUpdate = z.object({
     password: z.string().min(8).optional()
 })
 
-module.exports = { schemaUserRegister, schemaUserUpdate }
+module.exports = { schemaUserRegister, schemaUserLogin, schemaUserUpdate }
