@@ -1,15 +1,12 @@
 const express = require("express")
-const prisma = require("../lib/prisma")
+
 
 const router = express.Router()
 
-const bcrypt = require("bcrypt")
-const saltRounds = 10
-
-
-const jwt = require("jsonwebtoken")
+//Middleware
 const authMiddleware = require("../middleware/authMiddleware")
-const { schemaUserUpdate, schemaUserRegister, schemaUserLogin } = require("../schemas/userSchema")
+
+//Controller 
 const userController = require("../controller/userController")
 
 
