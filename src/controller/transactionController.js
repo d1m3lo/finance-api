@@ -1,7 +1,7 @@
 const prisma = require("../lib/prisma")
 const { schemaTransactionRegister, schemaTransactionUpdate } = require("../schemas/transactionSchema")
 
-async function transactionCreate(req, res) {
+async function transactionCreate(req, res, next) {
     try {
         const { description, type, amount } = req.body
         const result = schemaTransactionRegister.safeParse({ description, type, amount })
@@ -23,8 +23,7 @@ async function transactionCreate(req, res) {
         })
         return res.status(201).json(transaction)
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
@@ -40,7 +39,7 @@ async function transactionGet(req, res) {
     }
 }
 
-async function transactionGetById(req, res) {
+async function transactionGetById(req, res, next) {
     try {
         const transactionId = req.params.id
         const transaction = await prisma.transaction.findUnique({
@@ -50,12 +49,11 @@ async function transactionGetById(req, res) {
         if (transaction.userId !== req.user.id) return res.status(404).json({ error: "Transaction not found" })
         return res.status(200).json(transaction)
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
-async function transactionUpdateById(req, res) {
+async function transactionUpdateById(req, res, next) {
     try {
         const transactionId = req.params.id
         const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } })
@@ -84,12 +82,11 @@ async function transactionUpdateById(req, res) {
         await prisma.transaction.update({ where: { id: transaction.id }, data })
         return res.status(200).json({ message: "your transaction has been updated successfully" })
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
-async function transactionDeleteById(req, res) {
+async function transactionDeleteById(req, res, next) {
     try {
         const transactionId = req.params.id
         const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } })
@@ -98,8 +95,7 @@ async function transactionDeleteById(req, res) {
         await prisma.transaction.delete({ where: { id: transaction.id } })
         return res.status(200).json({ message: "Transaction deleted successfully" })
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
