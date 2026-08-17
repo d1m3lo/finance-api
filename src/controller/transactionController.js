@@ -6,7 +6,11 @@ async function transactionCreate(req, res) {
         const { description, type, amount } = req.body
         const result = schemaTransactionRegister.safeParse({ description, type, amount })
         if (!result.success) {
-            return res.status(400).json({ error: "Validation failed" })
+            const errors = result.error.issues.map((issue) => ({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({ error: "Validation failed", errors })
         }
         const transaction = await prisma.transaction.create({
             data:
@@ -61,7 +65,11 @@ async function transactionUpdateById(req, res) {
         const data = {}
         const result = schemaTransactionUpdate.safeParse({ description, type, amount })
         if (!result.success) {
-            return res.status(400).json({ error: "Validation failed" })
+            const errors = result.error.issues.map((issue) => ({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({ error: "Validation failed", errors })
         }
         if (description !== undefined) {
             data.description = result.data.description
