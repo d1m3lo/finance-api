@@ -9,7 +9,7 @@ const { schemaUserUpdate, schemaUserRegister, schemaUserLogin } = require("../sc
 
 
 
-async function userRegister(req, res) {
+async function userRegister(req, res, next) {
     try {
         const { name, email, password } = req.body
         const result = schemaUserRegister.safeParse({ name, email, password })
@@ -36,12 +36,11 @@ async function userRegister(req, res) {
         })
         res.status(201).json({ name: result.data.name, email: result.data.email })
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
-async function userLogin(req, res) {
+async function userLogin(req, res, next) {
     try {
         const { email, password } = req.body
         const result = schemaUserLogin.safeParse({ email, password })
@@ -62,13 +61,11 @@ async function userLogin(req, res) {
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' })
         res.status(200).json({ message: "successful login", accessToken: token })
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
-
+        next(err)
     }
 }
 
-async function userUpdate(req, res) {
+async function userUpdate(req, res, next) {
     try {
         const { name, email, password } = req.body
         const data = {}
@@ -96,18 +93,16 @@ async function userUpdate(req, res) {
         await prisma.user.update({ where: { id: req.user.id }, data })
         return res.status(200).json({ message: "your data has been updated successfully" })
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
-async function userDelete(req, res) {
+async function userDelete(req, res, next) {
     try {
         await prisma.user.delete({ where: { id: req.user.id } })
         return res.status(200).json({ message: "User deleted successfully" })
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
