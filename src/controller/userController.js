@@ -14,7 +14,11 @@ async function userRegister(req, res) {
         const { name, email, password } = req.body
         const result = schemaUserRegister.safeParse({ name, email, password })
         if (!result.success) {
-            return res.status(400).json({ error: "Validation failed" })
+            const errors = result.error.issues.map((issue) => ({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({ error: "Validation failed", errors })
         }
         const existingEmail = await prisma.user.findUnique({
             where: { email: result.data.email }
@@ -42,7 +46,11 @@ async function userLogin(req, res) {
         const { email, password } = req.body
         const result = schemaUserLogin.safeParse({ email, password })
         if (!result.success) {
-            return res.status(400).json({ error: "Validation failed" })
+            const errors = result.error.issues.map((issue) => ({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({ error: "Validation failed", errors })
         }
         const user = await prisma.user.findUnique({
             where: { email: result.data.email }
@@ -66,7 +74,11 @@ async function userUpdate(req, res) {
         const data = {}
         const result = schemaUserUpdate.safeParse({ name, email, password })
         if (!result.success) {
-            return res.status(400).json({ error: "Validation failed" })
+            const errors = result.error.issues.map((issue) => ({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({ error: "Validation failed", errors })
         }
         if (name !== undefined) {
             data.name = result.data.name
