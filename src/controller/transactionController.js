@@ -1,5 +1,5 @@
 const prisma = require("../lib/prisma")
-const { schemaTransactionRegister, schemaTransactionUpdate } = require("../schemas/transactionSchema")
+const { schemaTransactionRegister, schemaTransactionUpdate, schemaTransactionId } = require("../schemas/transactionSchema")
 
 async function transactionCreate(req, res, next) {
     try {
@@ -40,7 +40,15 @@ async function transactionGet(req, res, next) {
 
 async function transactionGetById(req, res, next) {
     try {
-        const transactionId = req.params.id
+        const resultId = schemaTransactionId.safeParse(req.params.id)
+        if (!resultId.success) {
+            const errors = resultId.error.issues.map((issue) => ({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({ error: "Validation failed ", errors })
+        }
+        const transactionId = resultId.data.id
         const transaction = await prisma.transaction.findUnique({
             where: { id: transactionId }
         })
@@ -54,7 +62,15 @@ async function transactionGetById(req, res, next) {
 
 async function transactionUpdateById(req, res, next) {
     try {
-        const transactionId = req.params.id
+        const resultId = schemaTransactionId.safeParse(req.params.id)
+        if (!resultId.sucess) {
+            const errors = resultId.error.issues.map((issue) => ({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({ error: "Validation failed", errors })
+        }
+        const transactionId = resultId.data.id
         const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } })
         if (!transaction) return res.status(404).json({ error: "Transaction not found" })
         if (transaction.userId !== req.user.id) return res.status(404).json({ error: "Transaction not found" })
@@ -87,7 +103,15 @@ async function transactionUpdateById(req, res, next) {
 
 async function transactionDeleteById(req, res, next) {
     try {
-        const transactionId = req.params.id
+        const resultId = schemaTransactionId.safeParse(req.params.id)
+        if(!resultId.sucess){
+            const errors = resultId.error.issues.map((issue)=>({
+                field: issue.path[0],
+                message: issue.message
+            }))
+            return res.status(400).json({error: "Validation failed", errors})
+        }
+        const transactionId = resultId.data.id
         const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } })
         if (!transaction) return res.status(404).json({ error: "Transaction not found" })
         if (transaction.userId !== req.user.id) return res.status(404).json({ error: "Transaction not found" })
