@@ -1,5 +1,5 @@
 const prisma = require("../lib/prisma")
-
+console.error(err)
 function errorMiddleware(err, req, res, next) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === "P2002") {
@@ -7,8 +7,10 @@ function errorMiddleware(err, req, res, next) {
                 error: "Resource already exists"
             })
         }
+        if (err.code === "P2025") {
+            return res.status(404).json({ error: "Resource not found" })
+        }
     }
-    console.error(err)
     return res.status(500).json({ error: "Internal Server Error" })
 }
 
