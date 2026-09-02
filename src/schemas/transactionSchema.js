@@ -12,5 +12,8 @@ const schemaTransactionUpdate = z.object({
     amount: z.number().positive().optional()
 })
 
+const schemaTransactionId = z.object({
+    id: z.string().pipe(z.uuid())
+})
 
-module.exports = { schemaTransactionRegister, schemaTransactionUpdate }
+module.exports = { schemaTransactionRegister, schemaTransactionUpdate, schemaTransactionId }
