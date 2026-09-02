@@ -27,15 +27,14 @@ async function transactionCreate(req, res, next) {
     }
 }
 
-async function transactionGet(req, res) {
+async function transactionGet(req, res, next) {
     try {
         const transactions = await prisma.transaction.findMany({
             where: { userId: req.user.id }
         })
         return res.status(200).json(transactions)
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ error: "Internal Server Error" })
+        next(err)
     }
 }
 
