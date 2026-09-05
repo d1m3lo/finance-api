@@ -1,6 +1,6 @@
 const prisma = require("../lib/prisma")
-console.error(err)
 function errorMiddleware(err, req, res, next) {
+    console.error(err)
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === "P2002") {
             return res.status(409).json({
