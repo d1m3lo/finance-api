@@ -1,4 +1,4 @@
-const { Prisma } = require("../lib/prisma") =
+const { Prisma } = require("../lib/prisma") 
     function errorMiddleware(err, req, res, next) {
         console.error(err)
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
