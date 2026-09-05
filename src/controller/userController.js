@@ -1,12 +1,7 @@
-const prisma = require("../lib/prisma")
-
-const bcrypt = require("bcrypt")
-const saltRounds = 10
-
 
 const jwt = require("jsonwebtoken")
 const { schemaUserUpdate, schemaUserRegister, schemaUserLogin } = require("../schemas/userSchema")
-
+const userService = require("../services/userService")
 
 
 async function userRegister(req, res, next) {
@@ -20,21 +15,8 @@ async function userRegister(req, res, next) {
             }))
             return res.status(400).json({ error: "Validation failed", errors })
         }
-        const existingEmail = await prisma.user.findUnique({
-            where: { email: result.data.email }
-        })
-        if (existingEmail) {
-            return res.status(409).json({ error: "Email already registered" })
-        }
-        const hashPassword = await bcrypt.hash(result.data.password, saltRounds)
-        await prisma.user.create({
-            data: {
-                name: result.data.name,
-                email: result.data.email,
-                password: hashPassword
-            }
-        })
-        res.status(201).json({ name: result.data.name, email: result.data.email })
+        const user = await userService.register(result.data.name, result.data.email, result.data.password)
+        res.status(201).json({name: user.name, email:user.email})
     } catch (err) {
         next(err)
     }
