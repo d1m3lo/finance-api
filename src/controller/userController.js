@@ -16,7 +16,7 @@ async function userRegister(req, res, next) {
             return res.status(400).json({ error: "Validation failed", errors })
         }
         const user = await userService.register(result.data.name, result.data.email, result.data.password)
-        res.status(201).json({name: user.name, email:user.email})
+        res.status(201).json({ name: user.name, email: user.email })
     } catch (err) {
         next(err)
     }
@@ -33,12 +33,7 @@ async function userLogin(req, res, next) {
             }))
             return res.status(400).json({ error: "Validation failed", errors })
         }
-        const user = await prisma.user.findUnique({
-            where: { email: result.data.email }
-        })
-        if (!user) return res.status(400).json({ error: "email or password is incorrect" })
-        const isValid = await bcrypt.compare(result.data.password, user.password)
-        if (!isValid) return res.status(400).json({ error: "email or password is incorrect" })
+        const user = await userService.login(result.data.email, result.data.password)
         const payload = { userId: user.id, name: user.name, email: user.email }
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' })
         res.status(200).json({ message: "successful login", accessToken: token })
