@@ -1,4 +1,5 @@
 const { Prisma } = require("@prisma/client");
+const { AppError } = require("../error/AppError");
 
 function errorMiddleware(err, req, res, next) {
     console.error(err)
@@ -11,6 +12,9 @@ function errorMiddleware(err, req, res, next) {
         if (err.code === "P2025") {
             return res.status(404).json({ error: "Resource not found" })
         }
+    }
+    if (err instanceof AppError) {
+        return res.status(err.statusCode).json({ error: err.message })
     }
     return res.status(500).json({ error: "Internal Server Error" })
 }
