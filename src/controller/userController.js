@@ -76,7 +76,7 @@ async function userUpdate(req, res, next) {
 
 async function userDelete(req, res, next) {
     try {
-        await prisma.user.delete({ where: { id: req.user.id } })
+        await userService.deleted(req.user.id)
         return res.status(200).json({ message: "User deleted successfully" })
     } catch (err) {
         next(err)

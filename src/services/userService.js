@@ -40,4 +40,8 @@ async function login(email, password) {
 async function update(userId, data) {
     await prisma.user.update({ where: { id: userId }, data })
 }
-module.exports = { register, login, update }
+
+async function deleted(userId) {
+    await prisma.user.delete({ where: { id: userId } })
+}
+module.exports = { register, login, update, deleted }
