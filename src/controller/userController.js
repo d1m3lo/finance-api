@@ -67,7 +67,7 @@ async function userUpdate(req, res, next) {
             data.password = hashPassword
         }
         if (Object.keys(data).length === 0) return res.status(400).json({ error: "Missing fields" })
-        await prisma.user.update({ where: { id: req.user.id }, data })
+        await userService.update(req.user.id, data)
         return res.status(200).json({ message: "your data has been updated successfully" })
     } catch (err) {
         next(err)
