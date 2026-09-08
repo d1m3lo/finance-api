@@ -11,3 +11,5 @@ async function createTransaction(description, type, amount, userId) {
     })
     return transaction
 }
+
+module.exports = {createTransaction}

@@ -1,6 +1,6 @@
-const prisma = require("../lib/prisma")
-const { schemaTransactionRegister, schemaTransactionUpdate, schemaTransactionId } = require("../schemas/transactionSchema")
 
+const { schemaTransactionRegister, schemaTransactionUpdate, schemaTransactionId } = require("../schemas/transactionSchema")
+const transactionService = require("../services/transactionService")
 async function transactionCreate(req, res, next) {
     try {
         const { description, type, amount } = req.body
@@ -12,15 +12,7 @@ async function transactionCreate(req, res, next) {
             }))
             return res.status(400).json({ error: "Validation failed", errors })
         }
-        const transaction = await prisma.transaction.create({
-            data:
-            {
-                description: result.data.description,
-                type: result.data.type,
-                amount: result.data.amount,
-                userId: req.user.id
-            }
-        })
+        const transaction = await transactionService.createTransaction(result.data.description, result.data.type, result.data.amount, req.user.id)
         return res.status(201).json(transaction)
     } catch (err) {
         next(err)
@@ -104,12 +96,12 @@ async function transactionUpdateById(req, res, next) {
 async function transactionDeleteById(req, res, next) {
     try {
         const resultId = schemaTransactionId.safeParse(req.params.id)
-        if(!resultId.sucess){
-            const errors = resultId.error.issues.map((issue)=>({
+        if (!resultId.sucess) {
+            const errors = resultId.error.issues.map((issue) => ({
                 field: issue.path[0],
                 message: issue.message
             }))
-            return res.status(400).json({error: "Validation failed", errors})
+            return res.status(400).json({ error: "Validation failed", errors })
         }
         const transactionId = resultId.data.id
         const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } })
